@@ -11,12 +11,13 @@ public class OS
 
     private short user_group_id = 1;
     private int user_count = 1;
-    private short UID;
-    private short GID;
+    private short UID = 0;
+    private short GID = 0;
     private String User_global;
     private String Password_global;
     private Scanner scan = new Scanner(System.in);
 
+    private EventsPlanner EP = new EventsPlanner();
     private SuperBlock SB = new SuperBlock();
     private BlocksBitMap BBM = new BlocksBitMap();
     private InodesBitMap IBM = new InodesBitMap();
@@ -54,7 +55,7 @@ public class OS
             boolean AccountWork = true;
             while (AccountWork)
             {
-                System.out.println("Choose your account work type (1 or 2):\n1. Create new user account\n2. Log in to existing user account\n3. Open process work program\nYour choice: ");
+                System.out.println("\nChoose your account work type (1 or 2):\n1. Create new user account\n2. Log in to existing user account\nYour choice: ");
                 int choice;
                 try
                 {
@@ -98,6 +99,8 @@ public class OS
                                             error = false;
                                             Password_global = password;
                                             user_count++;
+                                            UID = user_group_id;
+                                            GID = user_group_id;
                                             user_group_id++;
                                             DT.AddNewUser(user_group_id, user_group_id, User_global, Password_global, User_global, user_count);
                                         }
@@ -107,9 +110,6 @@ public class OS
                             break;
                         case 2:
                             AccountWork = false;
-                            break;
-                        case 3:
-                            System.out.println("PROCESS");
                             break;
                         default:
                             System.out.println("Error. Choose number from the list.");
@@ -141,6 +141,76 @@ public class OS
                 {
                     switch (subStr[0])
                     {
+                        case "planner":
+                            EP.StartPlanner(User_global);
+                            break;
+                        case "edfile":
+                            try
+                            {
+                                String[] file_info = subStr[1].split("\\.");
+                                if (file_info.length > 2 || file_info.length < 1)
+                                {
+                                    System.out.println("Syntax error. Type '-help' to find out right commands.");
+                                } else if (file_info[0].length() > 15 || file_info[0].length() < 1)
+                                {
+                                    System.out.println("Error. File name must be size from 1 to 15 (included).");
+                                } else
+                                {
+
+                                    StringBuilder content = new StringBuilder();
+                                    System.out.println("Enter content of file (If you want to stop entering type '*'):");
+                                    boolean cycle = true;
+                                    while (cycle)
+                                    {
+                                        String temp = scan.nextLine();
+                                        if (temp.equals("*"))
+                                        {
+                                            cycle = false;
+                                            content.append("#");
+                                            DT.EditExistFile(file_info[0], UID, GID, content);
+                                        } else
+                                        {
+                                            temp = temp + "\n";
+                                            content.append(temp);
+                                        }
+                                    }
+                                }
+                            } catch (Exception ex)
+                            {
+                                System.out.println("Syntax error. Type '-help' to find out right commands.");
+                            }
+                            break;
+                        case "cpfile":
+                            try
+                            {
+                                String[] file_info = subStr[1].split("\\.");
+                                if (file_info.length > 2 || file_info.length < 1)
+                                {
+                                    System.out.println("Syntax error. Type '-help' to find out right commands.");
+                                } else if (file_info[0].length() > 15 || file_info[0].length() < 1)
+                                {
+                                    System.out.println("Error. File name must be size from 1 to 15 (included).");
+                                } else
+                                {
+                                    String filename_data = "";
+                                    String extension_data = "";
+                                    try
+                                    {
+                                        filename_data = file_info[0];
+                                        extension_data = file_info[1];
+                                        DT.CopyExistFile(filename_data, UID, GID);
+                                    } catch (Exception ex)
+                                    {
+                                        extension_data = "";
+                                        DT.CopyExistFile(filename_data, UID, GID);
+                                    }
+
+                                }
+                            } catch (Exception ex)
+                            {
+                                System.out.println("Syntax error. Type '-help' to find out right commands.");
+                            }
+                            break;
                         case "shdir":
                             try
                             {
@@ -196,25 +266,49 @@ public class OS
                             {
                                 System.out.println("Syntax error. Type '-help' to find out right commands.");
                             }
-
                             break;
                         case "rmfile":
+                            try
+                            {
+                                String[] file_info = subStr[1].split("\\.");
+                                if (file_info.length > 2 || file_info.length < 1)
+                                {
+                                    System.out.println("Syntax error. Type '-help' to find out right commands.");
+                                } else if (file_info[0].length() > 15 || file_info[0].length() < 1)
+                                {
+                                    System.out.println("Error. File name must be size from 1 to 15 (included).");
+                                } else
+                                {
+                                    String filename_data = "";
+                                    String extension_data = "";
+                                    try
+                                    {
+                                        filename_data = file_info[0];
+                                        extension_data = file_info[1];
+                                        DT.CheckFileExist(filename_data, UID, GID);
+                                    } catch (Exception ex)
+                                    {
+                                        extension_data = "";
+                                        DT.CheckFileExist(filename_data, UID, GID);
+                                    }
+
+                                }
+                            } catch (Exception ex)
+                            {
+                                System.out.println("Syntax error. Type '-help' to find out right commands.");
+                            }
                             break;
                         case "-help":
                             System.out.println("Command line functions:\n" +
-                                    "mkfile <filename.ext> - create new file\n" +
-                                    "rmfile <filename.ext> - delete existing file\n" +
-                                    "-help - show help for the command line application\n" +
-                                    "-getbmb - show help for the command line application\n" +
-                                    "-getbmi - show help for the command line application\n" +
-                                    "-getilist - show help for the command line application\n" +
-                                    "-getsb - show help for the command line application\n" +
-                                    "-setsb - show help for the command line application\n" +
-                                    "-getrcat - show help for the command line application\n" +
-                                    "-tobit <num> - show help for the command line application\n" +
-                                    "-toMD5 <string> - show help for the command line application\n" +
+                                    "mkfile <filename> - create new file\n" +
+                                    "rmfile <filename> - delete existing file\n" +
+                                    "edfile <filename> - edit existing file\n" +
+                                    "cpfile <filename> - copy existing file\n" +
+                                    "opfile <filename> - open existing file\n" +
+                                    "shdir - show root directory\n" +
+                                    "shutdown - turn off file system\n" +
                                     "logout - log out from current account\n" +
-                                    "shutdown - turn off file system");
+                                    "-help - show help for the command line application");
                             break;
                         case "logout":
                             SessionRun = false;
@@ -266,7 +360,7 @@ public class OS
                             try
                             {
                                 String filename = subStr[1];
-                                FL.OpenExistFile(filename);
+                                DT.ReadFile(filename, UID, GID);
                             } catch (Exception ex)
                             {
                                 System.out.println("Syntax error. Type '-help' to find out right commands.");
@@ -293,7 +387,7 @@ public class OS
                 Password_global = password;
                 return true;
             }
-            System.out.println(CRYPT.md5Custom(password_entered) + " = " + password);
+            //System.out.println(CRYPT.md5Custom(password_entered) + " = " + password);
         }
         return false;
     }
@@ -352,15 +446,13 @@ public class OS
                     User_global = login;
                     if (CheckPasswordMatch(passwords, password_entered))
                     {
-                        UID = UserID;
-                        GID = GroupID;
                         return true;
                     } else
                     {
                         return false;
                     }
                 }
-                System.out.println(username_entered + " = " + login);
+                //System.out.println(username_entered + " = " + login);
             }
             return false;
         } catch (IOException ex)

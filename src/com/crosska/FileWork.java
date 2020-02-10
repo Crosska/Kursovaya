@@ -3,7 +3,6 @@ package com.crosska;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.nio.charset.StandardCharsets;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
@@ -34,7 +33,6 @@ public class FileWork
 
             short id = 0;
             int cluster_adress = DT.WriteUsersDataToCluster(id, id, "root", "162d3K", "root", file);
-            System.out.println(cluster_adress);
 
             // Данные инода к записи
 
@@ -104,7 +102,7 @@ public class FileWork
             StringBuilder str = new StringBuilder();
             str.append("0=0|"); // UID=GID
             int cluster_adress = DT.WriteGroupDataToCluster(str, file);
-            System.out.println(cluster_adress);
+            //System.out.println(cluster_adress);
 
             int cursor_free_inode = IL.FindFreeInode(file);
             CM.MoveToPartition(file, 0, 3);
@@ -172,7 +170,7 @@ public class FileWork
             // Запись данных в кластер
 
             int cluster_adress = DT.WriteDataToCluster(content, file);
-            System.out.println(cluster_adress);
+            //System.out.println(cluster_adress);
 
             // Данные инода к записи
 
@@ -194,7 +192,7 @@ public class FileWork
 
             // Запись инода
 
-            System.out.println("inod" + file.getFilePointer());
+            //System.out.println("inod" + file.getFilePointer());
             file.writeByte(file_type);                              // 1
             file.writeByte(file_rights_UG);                         // 1
             file.writeByte(file_rights_OS);                         // 1
@@ -228,47 +226,6 @@ public class FileWork
 
             BW.TakeNewBlock(file);
             BW.TakeNewInode(file);
-
-        } catch (IOException ex)
-        {
-            System.out.println(ex.toString());
-        }
-
-    }
-
-    public void OpenExistFile(String filename)
-    {
-        try (RandomAccessFile file = new RandomAccessFile(new File(Filename), "rw"))
-        {
-            String[] filenames = new String[25];
-            String[] extension = new String[25];
-            short[] inodes = new short[25];
-
-            long cursor = CM.MoveToPartition(file, 0, 4);
-            file.seek(cursor);
-
-            for (int j = 0; j < 25; j++)
-            {
-                byte[] temp = new byte[25];
-                for (int i = 0; i < 25; i++)
-                {
-                    temp[i] = file.readByte();
-                }
-                filenames[j] = new String(temp, StandardCharsets.US_ASCII);
-                System.out.print("\nИмя файла: " + filenames[j]);
-
-                temp = new byte[5];
-                for (int i = 0; i < 5; i++)
-                {
-                    temp[i] = file.readByte();
-                }
-                extension[j] = new String(temp, StandardCharsets.US_ASCII);
-                System.out.print("\nРасширение: " + extension[j]);
-
-                inodes[j] = file.readShort();
-                System.out.print("\nНомер инода: " + inodes[j]);
-                file.skipBytes(30);
-            }
 
         } catch (IOException ex)
         {
